@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
 
   // this is event for sending messages from user, data is coming from frontend!
   socket.on("sendMessage", (message, callback) => {
-    const user = getUser(socket.io);
+    const user = getUser(socket.id);
     socket.emit("message", { user: user.name, text: message });
     callback();
   });

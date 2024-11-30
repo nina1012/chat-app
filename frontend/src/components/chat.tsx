@@ -6,8 +6,11 @@ import { io, Socket } from "socket.io-client";
 let socket: Socket;
 
 export const Chat = () => {
-  const [name, setName] = useState("");
-  const [room, setRoom] = useState("");
+  const [name, setName] = useState<string>("");
+  const [room, setRoom] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+  const [messages, setMessages] = useState<string[]>([]);
+
   const location = useLocation();
   const ENDPOINT = "http://localhost:5000";
 
@@ -20,10 +23,7 @@ export const Chat = () => {
     setName(name as string);
 
     socket.emit("join", { name, room }, () => {
-      console.log(`${name} has joined ${room}`);
-    });
-    socket.on("message", (message) => {
-      console.log(message, " this message is from server");
+      // console.log(`${name} has joined ${room}`);
     });
     return () => {
       socket.disconnect();
@@ -31,9 +31,30 @@ export const Chat = () => {
     };
   }, [ENDPOINT, location.search]);
 
+  useEffect(() => {
+    socket.on("message", (message) => {
+      setMessages([...messages, message]);
+    });
+  }, [messages]);
+
+  const sendMessage = (e) => {
+    e.preventDefault();
+    if (message) {
+      socket.emit("sendMessage", message, () => setMessage(""));
+    }
+  };
+
   return (
     <div>
-      <h2>Chat</h2>
+      <div>
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => (e.key === "Enter" ? sendMessage(e) : null)}
+          placeholder="Enter your message"
+        />
+      </div>
     </div>
   );
 };

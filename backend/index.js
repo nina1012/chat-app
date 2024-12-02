@@ -43,19 +43,32 @@ io.on("connection", (socket) => {
 
     // after making sure that there are no errors, user joins the room
     socket.join(user.room);
+    io.to(user.room).emit("roomData", {
+      room: user.room,
+      users: getUsersInRoom(user.room),
+    });
 
-    callback();
+    // this is event for sending messages from user, data is coming from frontend!
+    socket.on("sendMessage", (message, callback) => {
+      const user = getUser(socket.id);
+      io.to(user.room).emit("message", { user: user.name, text: message });
+      callback();
+    });
 
     socket.on("disconnect", () => {
-      console.log("Connection is disconnected!!!");
-    });
-  });
+      const user = removeUser(socket.id);
 
-  // this is event for sending messages from user, data is coming from frontend!
-  socket.on("sendMessage", (message, callback) => {
-    const user = getUser(socket.id);
-    socket.emit("message", { user: user.name, text: message });
-    callback();
+      if (user) {
+        io.to(user.room).emit("message", {
+          user: "Admin",
+          text: `${user.name} has left.`,
+        });
+        io.to(user.room).emit("roomData", {
+          room: user.room,
+          users: getUsersInRoom(user.room),
+        });
+      }
+    });
   });
 });
 

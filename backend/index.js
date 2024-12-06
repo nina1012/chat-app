@@ -1,13 +1,13 @@
-const express = require("express");
-const socketio = require("socket.io");
-const http = require("http");
+import express from "express";
+import { Server } from "socket.io";
+import { createServer } from "http";
 const PORT = process.env.PORT || 5000;
-const router = require("./router");
-const cors = require("cors");
-const { addUser, removeUser, getUser, getUsersInRoom } = require("./users");
+import router from "./router.js";
+import cors from "cors";
+import { addUser, removeUser, getUser, getUsersInRoom } from "./users.js";
 
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
 
 // middleware functions
 // configuring CORS for express
@@ -15,7 +15,7 @@ app.use(cors()); // CORS should be called before router
 app.use(router);
 
 // CORS for Socket.io, because without this the app crashes
-const io = socketio(server, {
+const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
   },
